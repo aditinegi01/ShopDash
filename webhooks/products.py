@@ -26,7 +26,6 @@ def handle_product_webhook(data, action):
             product.title = product_title
             product.price = product_price
             product.inventory_quantity = inventory_qty
-            product.created_at = created_at
             print(f"Updated product: {product_id}")
         else:
             # create new product

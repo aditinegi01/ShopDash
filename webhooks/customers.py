@@ -35,7 +35,6 @@ def handle_customer_webhook(data, action):
             customer.last_name = last_name
             customer.email = email
             customer.total_spent = total_spent
-            customer.created_at = created_at
 
         db.session.commit()
         return jsonify({"message": f"Customer {action} synced"}), 200

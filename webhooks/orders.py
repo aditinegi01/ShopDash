@@ -28,7 +28,7 @@ def handle_order_webhook(data, action):
         if not order:
             order = Order(
                 order_id=order_id,
-                tenant_id=1,  # ⚠️ Replace with tenant_id from webhook context if available
+                tenant_id=1,
                 customer_id=customer_id,
                 product_id=product_id,
                 quantity=quantity,
@@ -41,7 +41,6 @@ def handle_order_webhook(data, action):
             order.product_id = product_id
             order.quantity = quantity
             order.total_price = total_price
-            order.created_at = created_at
 
         db.session.commit()
         return jsonify({"message": f"Order {action} synced"}), 200
