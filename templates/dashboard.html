@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>ShopDash</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #121212;
+      color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #1f1f1f;
+      padding: 12px 24px;
+    }
+    header h1 { margin: 0; color: #00bcd4; font-size: 20px; }
+    a { text-decoration: none; }
+    header a { color: #fff; background: #ef5350; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-weight: 700; }
+    header a:hover { background: #c62828; }
+
+    .cards {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin: 20px;
+    }
+
+    .card {
+      background: #1f1f1f;
+      padding: 18px 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,188,212,0.12);
+      text-align: center;
+      cursor: pointer;
+      transition: 0.2s;
+      min-width: 160px;
+    }
+    .card:hover { transform: translateY(-4px); }
+    .card h2 { margin: 0; color: #00bcd4; font-size: 26px; font-weight:700; }
+    .card p { margin: 6px 0 0; font-size: 14px; color: #cfd8dc; }
+
+    .container { padding: 18px 20px 40px; }
+
+    .charts {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .chart-card {
+      background: #1f1f1f;
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: stretch;
+      height: 320px;           
+    }
+
+    .chart-card canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+    }
+
+    @media (max-width: 900px) {
+      .charts { grid-template-columns: 1fr; }
+      .card { min-width: 120px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>ShopDash</h1>
+    <a href="{{ url_for('logout') }}">Logout</a>
+  </header>
+
+  <div class="cards">
+    <a href="/orders/{{ tenant_id }}"><div class="card"><h2>{{ total_orders }}</h2><p>Total Orders</p></div></a>
+    <a href="/products/{{ tenant_id }}"><div class="card"><h2>{{ total_products }}</h2><p>Total Products</p></div></a>
+    <a href="/customers/{{ tenant_id }}"><div class="card"><h2>{{ total_customers }}</h2><p>Total Customers</p></div></a>
+    <div class="card"><h2>₹{{ "%.2f"|format(total_revenue) }}</h2><p>Total Revenue</p></div>
+  </div>
+
+  <div class="container">
+    <div class="charts">
+      <div class="chart-card"><canvas id="ordersChart"></canvas></div>
+      <div class="chart-card"><canvas id="productsChart"></canvas></div>
+      <div class="chart-card"><canvas id="customersChart"></canvas></div>
+      <div class="chart-card"><canvas id="revenueChart"></canvas></div>
+    </div>
+  </div>
+
+  <script>
+
+    const rawLabels = {{ chart_labels|tojson }};
+
+    const labels = rawLabels.map(dateStr => {
+      const d = new Date(dateStr + "T00:00:00"); 
+      const weekday = d.toLocaleDateString('en-US', { weekday: 'short' }); 
+      const day = d.getDate(); 
+      return `${weekday} ${day}`;
+    });
+
+    
+    const ordersData = {{ orders_chart|tojson }};
+    const productsData = {{ products_chart|tojson }};
+    const customersData = {{ customers_chart|tojson }};
+    const revenueData = {{ revenue_chart|tojson }};
+
+
+    const commonOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: 'nearest',    
+        axis: 'x',          
+        intersect: false    
+      },
+      plugins: {
+        tooltip: {
+          enabled: true,
+          backgroundColor: "#202020",
+          titleColor: "#fff",
+          bodyColor: "#fff",
+          padding: 10,
+          cornerRadius: 6,
+          displayColors: true,
+          callbacks: {
+        
+            title: function(tooltipItems) {
+              const idx = tooltipItems[0].dataIndex;
+              const iso = rawLabels[idx];
+              const d = new Date(iso + "T00:00:00");
+              return d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }); // "Friday, Sep 13"
+            }
+          }
+        },
+        legend: {
+          labels: {
+            color: "#e0e0e0",
+            font: { size: 12, weight: '600' }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: "#d0d7db",
+            font: { size: 13, weight: '600' }
+          },
+          grid: { color: "rgba(255,255,255,0.03)" }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: {
+            color: "#d0d7db",
+            font: { size: 13, weight: '600' }
+          },
+          grid: { color: "rgba(255,255,255,0.03)" }
+        }
+      }
+    };
+
+    function lineDataset(label, data, color, fillColor) {
+      return {
+        label,
+        data,
+        borderColor: color,
+        backgroundColor: fillColor || 'rgba(0,0,0,0)',
+        tension: 0.35,
+        pointRadius: 6,         
+        pointHoverRadius: 9,    
+        hitRadius: 12,         
+        hoverRadius: 9,
+        fill: !!fillColor
+      };
+    }
+
+    function barDataset(label, data, color) {
+      return {
+        label,
+        data,
+        backgroundColor: color,
+        borderRadius: 6,
+        maxBarThickness: 48,
+        barPercentage: 0.7,
+        categoryPercentage: 0.8
+      };
+    }
+
+    new Chart(document.getElementById('ordersChart'), {
+      type: 'line',
+      data: { labels, datasets: [ lineDataset('Orders', ordersData, '#42a5f5', 'rgba(66,165,245,0.18)') ] },
+      options: commonOptions
+    });
+
+    new Chart(document.getElementById('productsChart'), {
+      type: 'bar',
+      data: { labels, datasets: [ barDataset('Products', productsData, '#66bb6a') ] },
+      options: commonOptions
+    });
+
+    new Chart(document.getElementById('customersChart'), {
+      type: 'line',
+      data: { labels, datasets: [ lineDataset('Customers', customersData, '#ffca28', 'rgba(255,202,40,0.14)') ] },
+      options: commonOptions
+    });
+
+    new Chart(document.getElementById('revenueChart'), {
+      type: 'bar',
+      data: { labels, datasets: [ barDataset('Revenue', revenueData, '#ef5350') ] },
+      options: {
+        ...commonOptions,
+        plugins: {
+          ...commonOptions.plugins,
+          tooltip: {
+            ...commonOptions.plugins.tooltip,
+            callbacks: {
+              title: commonOptions.plugins.tooltip.callbacks.title,
+              label: function(context) {
+                const v = context.parsed.y ?? context.raw;
+                return `${context.dataset.label}: ₹${Number(v).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+              }
+            }
+          }
+        },
+        scales: {
+          ...commonOptions.scales,
+          y: {
+            ...commonOptions.scales.y,
+            ticks: {
+              ...commonOptions.scales.y.ticks,
+              callback: function(val) { return '₹' + Number(val).toLocaleString(); }
+            }
+          }
+        }
+      }
+    });
+
+
+    window.addEventListener('resize', () => {
+      
+    });
+  </script>
+</body>
+</html>

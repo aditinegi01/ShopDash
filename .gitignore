@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+
+# Environment
+.env
+venv/
+env/
+.venv/
+ENV/
+
+# IDE / Editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs & temp files
+*.log
+*.pot
+*.mo
+*.swp
+.DS_Store
+Thumbs.db
+
+# Flask / instance config
+instance/
+*.pid
+
+# Backup files
+*.bak
+*.tmp
+*.old
+
+# Pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.cache/
