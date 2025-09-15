@@ -28,6 +28,15 @@ with app.app_context():
 
 access_token= os.getenv("SECRET_KEY")
 
+@app.route('/')
+def index():
+    if 'tenant_id' in session:
+        # user logged in → go to dashboard of that tenant
+        return redirect(url_for('dashboard', tenant_id=session['tenant_id']))
+    else:
+        # not logged in → go to login page
+        return redirect(url_for('login'))
+
 # Product created
 @app.route('/webhook/products/create', methods=['POST'])
 def webhook_product_create():
