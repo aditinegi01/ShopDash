@@ -1,9 +1,9 @@
-from flask import jsonify
+from flask import jsonify, session
 from datetime import datetime
 from models import Product, db  
 
 def handle_product_webhook(data, action):
-    print(f"Product {action.capitalize()} Webhook Received:", data)
+    print(f"Product {action.capitalize()} Webhook Received:", data.get("title"))
 
     try:
         product_id = data.get("id")
@@ -19,7 +19,7 @@ def handle_product_webhook(data, action):
             except Exception:
                 created_at = None  
 
-        product = Product.query.filter_by(product_id=product_id, tenant_id=data.tenant_id).first()
+        product = Product.query.filter_by(product_id=product_id, tenant_id=session['tenant_id']).first()
 
         if product:
             # update existing product
