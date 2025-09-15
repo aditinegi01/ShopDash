@@ -1,9 +1,11 @@
 from flask import jsonify
 from datetime import datetime
-from models import Customer, db
+from models import Customer, Tenant, db
 
 def handle_customer_webhook(data, action):
     try:
+        shop_domain = data.headers.get("X-Shopify-Shop-Domain")
+        tenant = Tenant.query.filter_by(store_name=shop_domain.replace(".myshopify.com", "")).first()
         customer_id = data.get("id")
         first_name = data.get("first_name")
         last_name = data.get("last_name")
@@ -22,7 +24,7 @@ def handle_customer_webhook(data, action):
         if not customer:
             customer = Customer(
                 customer_id=customer_id,
-                tenant_id=1,  
+                tenant_id=tenant.tenant_id,  
                 first_name=first_name,
                 last_name=last_name,
                 email=email,

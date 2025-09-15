@@ -33,7 +33,7 @@ def handle_product_webhook(data, action):
             # create new product
             product = Product(
                 product_id=product_id,
-                tenant_id=1,  
+                tenant_id=tenant.tenant_id,  
                 title=product_title,
                 price=product_price,
                 inventory_quantity=inventory_qty,
@@ -56,9 +56,11 @@ def handle_product_delete_webhook(data):
     print("Product Delete Webhook Received:", data)
 
     try:
+        shop_domain = data.headers.get("X-Shopify-Shop-Domain")
         product_id = data.get("id")
+        tenant = Tenant.query.filter_by(store_name=shop_domain.replace(".myshopify.com", "")).first()
 
-        product = Product.query.filter_by(product_id=product_id, tenant_id=1).first()
+        product = Product.query.filter_by(product_id=product_id, tenant_id=tenant.tenant_id).first()
         if product:
             db.session.delete(product)
             db.session.commit()
