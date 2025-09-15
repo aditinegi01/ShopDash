@@ -1,11 +1,12 @@
-from flask import jsonify, session
+from flask import jsonify
 from datetime import datetime
-from models import Product, db  
+from models import Product, Tenant, db  
 
 def handle_product_webhook(data, action):
     print(f"Product {action.capitalize()} Webhook Received:", data.get("title"))
 
     try:
+        shop_domain = data.headers.get("X-Shopify-Shop-Domain")
         product_id = data.get("id")
         product_title = data.get("title")
         product_price = float(data["variants"][0].get("price", 0) or 0)
@@ -19,7 +20,8 @@ def handle_product_webhook(data, action):
             except Exception:
                 created_at = None  
 
-        product = Product.query.filter_by(product_id=product_id, tenant_id=session['tenant_id']).first()
+        tenant = Tenant.query.filter_by(store_name=shop_domain.replace(".myshopify.com", "")).first()
+        product = Product.query.filter_by(product_id=product_id, tenant_id=tenant.tenant_id).first()
 
         if product:
             # update existing product
