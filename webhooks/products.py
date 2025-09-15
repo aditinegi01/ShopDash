@@ -2,11 +2,10 @@ from flask import jsonify
 from datetime import datetime
 from models import Product, Tenant, db  
 
-def handle_product_webhook(data, action):
-    print(f"Product {action.capitalize()} Webhook Received:", data.get("title"))
-
+def handle_product_webhook(request, action):
     try:
-        shop_domain = data.headers.get("X-Shopify-Shop-Domain")
+        shop_domain = request.headers.get("X-Shopify-Shop-Domain")
+        data = request.json
         product_id = data.get("id")
         product_title = data.get("title")
         product_price = float(data["variants"][0].get("price", 0) or 0)
@@ -52,11 +51,10 @@ def handle_product_webhook(data, action):
         return jsonify({"error": str(e)}), 500
 
 
-def handle_product_delete_webhook(data):
-    print("Product Delete Webhook Received:", data)
-
+def handle_product_delete_webhook(request):
     try:
-        shop_domain = data.headers.get("X-Shopify-Shop-Domain")
+        shop_domain = request.headers.get("X-Shopify-Shop-Domain")
+        data = request.json
         product_id = data.get("id")
         tenant = Tenant.query.filter_by(store_name=shop_domain.replace(".myshopify.com", "")).first()
 

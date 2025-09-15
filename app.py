@@ -40,58 +40,49 @@ def index():
 # Product created
 @app.route('/webhook/products/create', methods=['POST'])
 def webhook_product_create():
-    data = request.json
-    return handle_product_webhook(data, action="create")
+    return handle_product_webhook(request, action="create")
 
 # Product updated
 @app.route('/webhook/products/update', methods=['POST'])
 def webhook_product_update():
-    data = request.json
-    return handle_product_webhook(data, action="update")
+    return handle_product_webhook(request, action="update")
 
 # Product deleted
 @app.route('/webhook/products/delete', methods=['POST'])
 def webhook_product_delete():
-    data = request.json
-    return handle_product_delete_webhook(data)
+    return handle_product_delete_webhook(request)
 
 
 # Customer created
 @app.route('/webhook/customers/create', methods=['POST'])
 def webhook_customer_create():
-    data = request.json
-    return handle_customer_webhook(data, action="create")
+    return handle_customer_webhook(request, action="create")
 
 # Customer updated
 @app.route('/webhook/customers/update', methods=['POST'])
 def webhook_customer_update():
-    data = request.json
-    return handle_customer_webhook(data, action="update")
+    return handle_customer_webhook(request, action="update")
 
 # Customer deleted
 @app.route('/webhook/customers/delete', methods=['POST'])
 def webhook_customer_delete():
-    data = request.json
-    return handle_customer_delete_webhook(data)
+    return handle_customer_delete_webhook(request)
 
 
 # Order created
 @app.route('/webhook/orders/create', methods=['POST'])
 def webhook_order_create():
-    data = request.json
-    return handle_order_webhook(data, action="create")
+    return handle_order_webhook(request, action="create")
 
 # Order updated
 @app.route('/webhook/orders/update', methods=['POST'])
 def webhook_order_update():
-    data = request.json
-    return handle_order_webhook(data, action="update")
+    return handle_order_webhook(request, action="update")
 
 # Order cancelled
 @app.route('/webhook/orders/cancelled', methods=['POST'])
 def webhook_order_cancelled():
-    data = request.json
-    return handle_order_delete_webhook(data)
+    return handle_order_delete_webhook(request)
 
 
 @app.route('/register', methods=['GET', 'POST'])
